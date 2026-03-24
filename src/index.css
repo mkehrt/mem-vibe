@@ -1,0 +1,36 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #f7f5f0;
+  --bg-accent: #ebe6dc;
+  --text: #2a2622;
+  --text-muted: #6b645c;
+  --output-pending-color: #a3a3a3;
+  --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  background-image: radial-gradient(
+    ellipse 120% 80% at 50% -20%,
+    var(--bg-accent),
+    var(--bg) 55%
+  );
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

@@ -1,0 +1,172 @@
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  /* Extra room below so scrollIntoView({ block: 'center' }) can center low inputs */
+  padding-bottom: calc(clamp(1.5rem, 5vw, 3rem) + 50vh);
+  gap: 1.25rem;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 9vw, 5rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  color: var(--text);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.title::after {
+  content: '';
+  display: block;
+  width: 3rem;
+  height: 1px;
+  margin: 1.25rem auto 0;
+  background: var(--text-muted);
+  opacity: 0.45;
+}
+
+.panel {
+  width: min(calc(100vw * 2 / 3), 100%);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(42, 38, 34, 0.12);
+  border-radius: 14px;
+  padding: 1.25rem 1.25rem 1.75rem;
+  box-shadow:
+    rgba(0, 0, 0, 0.06) 0 10px 30px -10px,
+    rgba(0, 0, 0, 0.04) 0 2px 6px -1px;
+  backdrop-filter: blur(8px);
+}
+
+.textbox {
+  display: block;
+  width: 100%;
+  height: 50vh;
+  min-height: 14rem;
+  font-family: inherit;
+  font-size: 2rem;
+  line-height: 1.5;
+  word-break: normal;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(42, 38, 34, 0.15);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  resize: none;
+  outline: none;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+}
+
+.textbox::placeholder {
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+.textbox:focus {
+  border-color: rgba(170, 59, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(170, 59, 255, 0.18);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.output {
+  position: relative;
+  --output-line-size: clamp(2rem, 5vw, 3.25rem);
+  --output-input-border-width: 1px;
+  --output-input-inline-padding: 0.5em;
+  /* Equal space above/below hr so the rule sits halfway between inputs and next line text */
+  --output-rule-half-gap: clamp(0.75rem, 2.5vw, 1.125rem);
+  width: min(calc(100vw * 2 / 3), 100%);
+  display: flex;
+  flex-direction: column;
+  /* Vertical rhythm between rows comes from .output-line-rule margins */
+  gap: 0;
+  font-family: var(--font-display);
+  color: var(--text);
+  text-align: left;
+}
+
+.measure-mirror-output {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.output-line {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.output-line-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.output-line-text {
+  box-sizing: border-box;
+  font-size: var(--output-line-size);
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  /* Align with text inside inputs: border + horizontal padding */
+  padding-left: calc(var(--output-input-border-width) + var(--output-input-inline-padding));
+  padding-right: calc(var(--output-input-border-width) + var(--output-input-inline-padding));
+}
+
+.output-char-match {
+  color: var(--text);
+}
+
+.output-char-pending {
+  color: var(--output-pending-color);
+}
+
+.output-char-mismatch {
+  color: #c62828;
+}
+
+.output-line-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  font-family: inherit;
+  font-size: var(--output-line-size);
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.75);
+  border: var(--output-input-border-width) solid rgba(42, 38, 34, 0.18);
+  border-radius: 10px;
+  padding: 0.35em var(--output-input-inline-padding);
+  outline: none;
+}
+
+.output-line-input:focus {
+  border-color: rgba(170, 59, 255, 0.45);
+  box-shadow: 0 0 0 3px rgba(170, 59, 255, 0.15);
+}
+
+.output-line-rule {
+  border: none;
+  border-top: 1px solid rgba(42, 38, 34, 0.14);
+  margin: 0;
+  margin-top: var(--output-rule-half-gap);
+  margin-bottom: var(--output-rule-half-gap);
+  width: 100%;
+  align-self: stretch;
+}
