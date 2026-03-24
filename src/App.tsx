@@ -1,5 +1,6 @@
 import './App.css'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { readSavedTexts, writeSavedTexts } from './savedTextsCookie'
 import { setMeasureToOutputWidth, splitVisualLines } from './splitVisualLines'
 
 function renderOutputLineWithMatch(line: string, typed: string) {
@@ -31,6 +32,10 @@ function renderOutputLineWithMatch(line: string, typed: string) {
 }
 
 function App() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [saveNameInput, setSaveNameInput] = useState('')
+  const [savedTexts, setSavedTexts] = useState<Record<string, string>>({})
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [value, setValue] = useState('')
   const [lineInputs, setLineInputs] = useState<string[]>([])
   const [visualLines, setVisualLines] = useState<string[]>([])
@@ -124,9 +129,162 @@ function App() {
     }
   }, [lineInputs, visualLines, value])
 
+  useEffect(() => {
+    setSavedTexts(readSavedTexts())
+  }, [])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen])
+
+  const handleSaveCurrent = useCallback(() => {
+    const name = saveNameInput.trim()
+    if (!name) {
+      setSaveError('Enter a name for this save.')
+      return
+    }
+    const next = { ...savedTexts, [name]: value }
+    const result = writeSavedTexts(next)
+    if (!result.ok) {
+      setSaveError('Could not save — text may be too large for browser storage.')
+      return
+    }
+    setSavedTexts(next)
+    setSaveError(null)
+    setSaveNameInput('')
+  }, [saveNameInput, savedTexts, value])
+
+  const handleLoadSaved = useCallback((name: string) => {
+    const text = savedTexts[name]
+    if (text === undefined) return
+    setValue(text)
+    setMenuOpen(false)
+  }, [savedTexts])
+
+  const handleDeleteSaved = useCallback(
+    (name: string) => {
+      const next = { ...savedTexts }
+      delete next[name]
+      const result = writeSavedTexts(next)
+      if (!result.ok) return
+      setSavedTexts(next)
+    },
+    [savedTexts],
+  )
+
   return (
-    <main className="app">
-      <h1 className="title">Memorare</h1>
+    <>
+      <header className="top-bar">
+        <div className="top-bar__start">
+          <button
+            type="button"
+            className="top-bar__menu-btn"
+            aria-expanded={menuOpen}
+            aria-controls="site-menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            <svg
+              className="top-bar__hamburger"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                fill="currentColor"
+                d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"
+              />
+            </svg>
+          </button>
+        </div>
+        <span className="top-bar__brand">Memorare</span>
+        <div className="top-bar__end" aria-hidden />
+      </header>
+      {menuOpen ? (
+        <button
+          type="button"
+          className="top-bar__backdrop"
+          aria-label="Close menu"
+          onClick={() => setMenuOpen(false)}
+        />
+      ) : null}
+      <nav
+        id="site-menu"
+        className={`top-bar-drawer${menuOpen ? ' top-bar-drawer--open' : ''}`}
+        aria-hidden={!menuOpen}
+        inert={!menuOpen}
+      >
+        <div className="top-bar-drawer__inner">
+          <p className="top-bar-drawer__heading">Saved texts</p>
+          <div className="top-bar-drawer__save-row">
+            <label className="top-bar-drawer__field-label" htmlFor="save-name">
+              Name
+            </label>
+            <input
+              id="save-name"
+              className="top-bar-drawer__input"
+              type="text"
+              value={saveNameInput}
+              placeholder="Name this save"
+              autoComplete="off"
+              onChange={(e) => {
+                setSaveNameInput(e.target.value)
+                setSaveError(null)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleSaveCurrent()
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="top-bar-drawer__save-btn"
+              onClick={handleSaveCurrent}
+            >
+              Save current text
+            </button>
+          </div>
+          {saveError ? (
+            <p className="top-bar-drawer__error" role="alert">
+              {saveError}
+            </p>
+          ) : null}
+          {Object.keys(savedTexts).length === 0 ? (
+            <p className="top-bar-drawer__empty">No saved texts yet.</p>
+          ) : (
+            <ul className="top-bar-drawer__list">
+              {Object.keys(savedTexts)
+                .sort((a, b) => a.localeCompare(b))
+                .map((name) => (
+                  <li key={name} className="top-bar-drawer__list-item">
+                    <button
+                      type="button"
+                      className="top-bar-drawer__load-btn"
+                      onClick={() => handleLoadSaved(name)}
+                    >
+                      {name}
+                    </button>
+                    <button
+                      type="button"
+                      className="top-bar-drawer__delete-btn"
+                      aria-label={`Delete save “${name}”`}
+                      onClick={() => handleDeleteSaved(name)}
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+      </nav>
+      <main className="app">
       <div className="panel">
         <textarea
           id="memorare-input"
@@ -183,7 +341,8 @@ function App() {
           ))}
         </div>
       ) : null}
-    </main>
+      </main>
+    </>
   )
 }
 
