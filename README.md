@@ -43,6 +43,15 @@ Preview the production build locally:
 npm run preview
 ```
 
+That serves the contents of `dist/` the same way most hosts do (so JS/CSS and `m.svg` load correctly).
+
+## Distributing the built site
+
+Yes: **deploy everything inside `dist/`** after `npm run build`. Upload `dist/index.html`, `dist/assets/`, and `dist/m.svg` (Vite copies `public/m.svg` into `dist/` at build time).
+
+- **Do not** open `dist/index.html` directly from the disk (`file://`) in a browser. The app uses ES modules and absolute `/assets/...` URLs; use `npm run preview` or any static HTTP server instead.
+- **Favicon** — If the icon was missing, run a fresh `npm run build` so `m.svg` is copied, and keep `m.svg` next to `index.html` in the deployed folder. The HTML uses a **relative** `./m.svg` link so the icon resolves when the site is served from a subfolder or locally via a server.
+
 ## Lint
 
 ```bash
